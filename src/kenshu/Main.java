@@ -4,8 +4,10 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		GamePlay g = new GamePlay(1);
+		//GamePlayクラスのインスタンスを作成
+		GamePlay g = new GamePlay();
 
+		//オセロ実行
 		g.play();
 	}
 

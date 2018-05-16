@@ -11,13 +11,13 @@ public class GamePlay {
 	private Stone stone;
 
 	//どちらのターンか判別する。黒が2、白が1
-	private int turn;
+	public int turn = 2;
 
 	//入力された値を保持する変数
 	private int place;
 
 	//ビット演算に使用する変数
-	private int bit = 3;
+	public final int bit = 3;
 
 	//盤面のx座標
 	private int x;
@@ -25,90 +25,102 @@ public class GamePlay {
 	//盤面のy座標
 	private int y;
 
-	public GamePlay(int turn){
-		this.turn = turn;
-	}
-
-
+	/**
+	 * オセロゲームを開始から
+	 * 終了までの一連の処理をするメソッド
+	 */
 	public void play(){
 
 		do{
+			//Boardクラスのインスタンスを作成
 			board = new Board();
 
+			//Stoneクラスのインスタンスを作成
 			stone = new Stone(2, 2);
 
+			//盤面の初期化
+			board.init();
+
+			//盤面の中身をコンソールに出力
 			board.display();
 
+			//オセロが終了するまで繰り返す
 			while(game_end() != 0){
 
+				//黒のターンの処理
 				if(turn == 2){
+					//パスでない場合
 					if(pass() == 1){
 						System.out.println("●のターン");
+
+						//コンソールから数字を入力
 						place = Util.input();
 
+						//入力した値が配列の値を超えているともう一度入力してもらう
+						if(place < 00 || place > 78){
+							System.out.println("00から77の間で入力してください");
+							continue;
+						}
+
+						//入力した値の10の位をyに代入
 						y = place / 10;
 
+						//入力した値を1の位をxに代入
 					    x = place % 10;
 
-					    while(check(y , x) == 0){
+					    //裏返しの処理を実行
+					    check(y, x);
 
-					    	System.out.println("挟める石がありません");
-
-					    	board.display();
-
-					    	System.out.println("●のターン");
-
-					    	place = Util.input();
-
-					    	y = place / 10;
-
-						    x = place % 10;
-					    }
-					    flip(y, x);
-
+					    //配列の中身をコンソールに表示
 					    board.display();
 
+					    //ターンの入れ替え
 					    turn = 1;
 
+					//パスの際の処理
 					}else{
 						System.out.println("黒はパスです");
 
+						//ターンの入れ替え
 						turn = 1;
 
 						break;
 					}
+				//白のターンの処理
 				}else if(turn == 1){
+					//パスでない場合
 					if(pass() == 1){
 						System.out.println("○のターン");
 
+						//コンソールから数字を入力
 						place = Util.input();
 
+						//入力した値が配列の値を超えているともう一度入力してもらう
+						if(place < 00 || place > 78){
+							System.out.println("00から77の間で入力してください");
+							continue;
+						}
+
+						//入力した値の10の位をyに代入
 						y = place / 10;
 
+						//入力した値を1の位をxに代入
 					    x = place % 10;
 
-					    while(check(y , x) == 0){
+					    //裏返しの処理を実行
+					    check(y, x);
 
-					    	System.out.println("挟める石がありません");
-
-					    	board.display();
-
-					    	System.out.println("○のターン");
-
-					    	place = Util.input();
-
-					    	y = place / 10;
-
-						    x = place % 10;
-					    }
-					    flip(y, x);
-
+					    //配列の中身をコンソールに表示
 					    board.display();
 
+					    //ターンの入れ替え
 					    turn = 2;
+
+					//パスの際の処理
 					}else{
 						System.out.println("白はパスです");
 
+						//ターンの入れ替え
 						turn = 2;
 
 						break;
@@ -116,10 +128,10 @@ public class GamePlay {
 				}
 
 			}
-
+			//勝敗を表示
 			judge();
 
-
+		//オセロゲームを続けるか選択
 		}while(Util.retry() != 0);
 
 
@@ -135,14 +147,18 @@ public class GamePlay {
 	 * @return 終了なら0、終了でなければ1を返す。
 	 */
 	public int game_end(){
+
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
-				if(board.getBanmen()[i][j] == 0){
+
+				//配列の中身に0があるか調べる
+				if(board.banmen[i][j] == 0){
 					return 1;
 				}
 			}
 		}
 
+		//黒と白の石、どちらか0でないか調べる
 		if(stone.getBlack() != 0 || stone.getWhite() != 0){
 			return 1;
 		}
@@ -156,17 +172,22 @@ public class GamePlay {
 		int black = 0 , white = 0;
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
-				if(board.getBanmen()[i][j] == 2){
+				//黒の石を数える
+				if(board.banmen[i][j] == 2){
 					black++;
-				}else if(board.getBanmen()[i][j] == 1){
+				//白の石を数える
+				}else if(board.banmen[i][j] == 1){
 					white++;
 				}
 			}
 		}
+		//白が多かった際
 		if(black < white){
 			System.out.println(white + "枚で白の勝ち");
+		//枚数が同じの際
 		}else if(black == white){
 			System.out.println("引き分け");
+		//黒が多かった際
 		}else{
 			System.out.println(black + "枚で黒の勝ち");
 		}
@@ -181,482 +202,602 @@ public class GamePlay {
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
 				//配列[0][0]の時、右、下、右斜め下にしか検索しない
-				if(board.getBanmen()[i][j] == 0 && i == 0 && j == 0){
-					//右方向に相手の石を見つけた際にその先に自分の石があれば挟むことができるのでパスではない
-					if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+				if(board.banmen[i][j] == 0 && i == 0 && j == 0){
+					//右方向に相手の石を見つけた際
+					if(board.banmen[i][j + 1] == (turn ^ bit)){
+						//右方向に進んでいく
 						for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 
 					}
 
-					//下方向への検索
-					if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+					//下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j] == (turn ^ bit)){
+						//下方向に進んでいく
 						for(int a = i + 1; a < 8; a++){
-							if(board.getBanmen()[a][j] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][j] == 0){
 								break;
-							}else if(board.getBanmen()[a][j] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 
 					}
 
-					//右斜め下への検索
-					if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+					//右斜め下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 						int b = j + 1;
+						//右下方向に進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 					}
 
 				//配列[0][7]の時、左、下、左斜め下にしか検索しない
-				}else if(board.getBanmen()[i][j] == 0 && i == 0 && j == 7){
+				}else if(board.banmen[i][j] == 0 && i == 0 && j == 7){
 
-					//左方向への検索
-					if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+					//左方向に相手の石を見つけた際
+					if(board.banmen[i][j-1] == (turn ^ bit)){
+						//左方向に進んでいく
 						for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 
 				    }
-					//下方向への検索
-					if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+					//下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j] == (turn ^ bit)){
+						//下方向へ進んでいく
 				    	for(int a = i + 1; a < 8; a++){
-				    		if(board.getBanmen()[a][j] == 0){
+				    		//石が置いてない場所を見つけた際
+				    		if(board.banmen[a][j] == 0){
 				    			break;
-				    		}else if(board.getBanmen()[a][j] == 1){
+				    		//自分の石を見つけた際
+				    		}else if(board.banmen[a][j] == 1){
 								return 1;
 							}
 						}
 
 				    }
-					//左斜め下への検索
-					if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+					//左斜め下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 				    	int b = j - 1;
+				    	//左下へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 				    }
 
 				//配列[7][0]の時、上、右、右斜め上にしか検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7 && j == 0){
+			    }else if(board.banmen[i][j] == 0 && i == 7 && j == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //配列[7][7]の時、左、上、左斜め上にしか検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7 && j == 7){
+			    }else if(board.banmen[i][j] == 0 && i == 7 && j == 7){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 			    	}
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //配列[0][j]の時、上側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 0){
+			    }else if(board.banmen[i][j] == 0 && i == 0){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //配列[i][0]の時、左側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && j == 0){
+			    }else if(board.banmen[i][j] == 0 && j == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 			    				return 1;
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //配列[i][7]の時、右側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && j == 7){
+			    }else if(board.banmen[i][j] == 0 && j == 7){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 			    				return 1;
 			    			}
 			    		}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	//左斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //配列[7][j]の時、下側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7){
+			    }else if(board.banmen[i][j] == 0 && i == 7){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a > 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 			    				return 1;
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
 			    //他の座標は周りをすべて調べる
-			    }else if(board.getBanmen()[i][j] == 0){
+			    }else if(board.banmen[i][j] == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 			    				return 1;
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	//左斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
 								return 1;
 							}
 						}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
 								return 1;
 							}
 						}
@@ -675,486 +816,647 @@ public class GamePlay {
 	 * @param j　コンソールから入力された一の位の数字
 	 * @return　置けなければ0、置けるなら1を返す。
 	 */
-	public int check(int i, int j){
+	public void check(int i, int j){
 				//配列[0][0]の時、右、下、右斜め下にしか検索しない
-				if(board.getBanmen()[i][j] == 0 && i == 0 && j == 0){
-					//右方向に相手の石を見つけた際にその先に自分の石があれば挟むことができるのでパスではない
-					if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+				if(board.banmen[i][j] == 0 && i == 0 && j == 0){
+					//右方向に相手の石を見つけた際に
+					if(board.banmen[i][j + 1] == (turn ^ bit)){
+						//右方向へ進んでいく
 						for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 
 					}
 
-					//下方向への検索
-					if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+					//下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j] == (turn ^ bit)){
+						//下方向へ進んでいく
 						for(int a = i + 1; a < 8; a++){
-							if(board.getBanmen()[a][j] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][j] == 0){
 								break;
-							}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][j] == turn){
+								//裏返す処理
+								flip_S(i, j);
 							}
 						}
 
 					}
 
-					//右斜め下への検索
-					if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+					//右斜め下に相手の石を見つけた際
+					if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 						int b = j + 1;
+						//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SE(i, j);
 							}
 						}
 					}
+
 
 				//配列[0][7]の時、左、下、左斜め下にしか検索しない
-				}else if(board.getBanmen()[i][j] == 0 && i == 0 && j == 7){
+				}else if(board.banmen[i][j] == 0 && i == 0 && j == 7){
 
-					//左方向への検索
-					if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+					//左方向に相手の石を見つけた際
+					if(board.banmen[i][j-1] == (turn ^ bit)){
+						//左方向へ進んでいく
 						for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 
 				    }
-					//下方向への検索
-					if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+					//下方向に相手の石を見つけた際
+					if(board.banmen[i + 1][j] == (turn ^ bit)){
+						//下方向へ進んでいく
 				    	for(int a = i + 1; a < 8; a++){
-				    		if(board.getBanmen()[a][j] == 0){
+				    		//石が置いてない場所を見つけた際
+				    		if(board.banmen[a][j] == 0){
 				    			break;
-				    		}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+				    		//自分の石を見つけた際
+				    		}else if(board.banmen[a][j] == turn){
+				    			//裏返す処理
+								flip_S(i, j);
 							}
 						}
 
 				    }
-					//左斜め下への検索
-					if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+					//左斜め下に相手の石を見つけた際
+					if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 				    	int b = j - 1;
+				    	//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SW(i, j);
 							}
 						}
 				    }
 
 				//配列[7][0]の時、上、右、右斜め上にしか検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7 && j == 0){
+			    }else if(board.banmen[i][j] == 0 && i == 7 && j == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向に進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_N(i, j);
 							}
 						}
 
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NE(i, j);
 							}
 						}
 			    	}
 
 			    //配列[7][7]の時、左、上、左斜め上にしか検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7 && j == 7){
+			    }else if(board.banmen[i][j] == 0 && i == 7 && j == 7){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 			    	}
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_N(i, j);
 							}
 						}
 			    	}
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NW(i, j);
 							}
 						}
 			    	}
 
 			    //配列[0][j]の時、上側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 0){
+			    }else if(board.banmen[i][j] == 0 && i == 0){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向に進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 			    	}
-			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	//左斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SW(i, j);
 							}
 						}
 			    	}
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_S(i, j);
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
-						for(int a = i + 1; a < 8 || b < 8; a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+			    		//右下方向へ進んでいく
+						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SE(i, j);
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 			    	}
 
 			    //配列[i][0]の時、左側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && j == 0){
+			    }else if(board.banmen[i][j] == 0 && j == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-			    				return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+			    				flip_N(i, j);
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NE(i, j);
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SE(i, j);
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_S(i, j);
 							}
 						}
 			    	}
 
 			    //配列[i][7]の時、右側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && j == 7){
+			    }else if(board.banmen[i][j] == 0 && j == 7){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-			    				return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+			    				flip_N(i, j);
 			    			}
 			    		}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NW(i, j);
 							}
 						}
 			    	}
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 			    	}
 
-			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	//左斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SW(i, j);
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_S(i, j);
 							}
 						}
 			    	}
 
 			    //配列[7][j]の時、下側を検索しない
-			    }else if(board.getBanmen()[i][j] == 0 && i == 7){
+			    }else if(board.banmen[i][j] == 0 && i == 7){
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NW(i, j);
 							}
 						}
 			    	}
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-			    				return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+			    				flip_N(i, j);
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NE(i, j);
 							}
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 			    	}
 
 			    //他の座標は周りをすべて調べる
-			    }else if(board.getBanmen()[i][j] == 0){
+			    }else if(board.banmen[i][j] == 0){
 
-			    	//上方向への検索
-			    	if(board.getBanmen()[i - 1][j] == (turn ^ bit)){
+			    	//上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j] == (turn ^ bit)){
+			    		//上方向へ進んでいく
 			    		for(int a = i - 1; a >= 0; a--){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-			    				return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+			    				flip_N(i, j);
 			    			}
 			    		}
 			    	}
 
-			    	//右斜め上方向への検索
-			    	if(board.getBanmen()[i - 1][j + 1] == (turn ^ bit)){
+			    	//右斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i - 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b < 8); a--, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NE(i, j);
 							}
 
 						}
 			    	}
 
-			    	//右方向への検索
-			    	if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
+			    	//右方向に相手の石を見つけた際
+			    	if(board.banmen[i][j + 1] == (turn ^ bit)){
+			    		//右方向へ進んでいく
 			    		for(int a = j + 1; a < 8; a++){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_E(i, j);
 							}
 						}
 			    	}
 
-			    	//右斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j + 1] == (turn ^ bit)){
+			    	//右斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j + 1] == (turn ^ bit)){
 			    		int b = j + 1;
+			    		//右下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b < 8); a++, b++){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SE(i, j);
 							}
 						}
 			    	}
 
-			    	//下方向への検索
-			    	if(board.getBanmen()[i + 1][j] == (turn ^ bit)){
+			    	//下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j] == (turn ^ bit)){
+			    		//下方向へ進んでいく
 			    		for(int a = i + 1; a < 8; a++){
-			    			if(board.getBanmen()[a][j] == 0){
+			    			//石が置いてない場所を見つけた際
+			    			if(board.banmen[a][j] == 0){
 			    				break;
-			    			}else if(board.getBanmen()[a][j] == turn){
-								return 1;
+			    			//自分の石を見つけた際
+			    			}else if(board.banmen[a][j] == turn){
+			    				//裏返す処理
+								flip_S(i, j);
 							}
 						}
 			    	}
 
-			    	//左斜め下方向への検索
-			    	if(board.getBanmen()[i + 1][j - 1] == (turn ^ bit)){
+			    	//左斜め下方向に相手の石を見つけた際
+			    	if(board.banmen[i + 1][j - 1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左下方向へ進んでいく
 						for(int a = i + 1; (a < 8) && (b >= 0); a++, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_SW(i, j);
 							}
 						}
 			    	}
 
-			    	//左方向への検索
-			    	if(board.getBanmen()[i][j-1] == (turn ^ bit)){
+			    	//左方向に相手の石を見つけた際
+			    	if(board.banmen[i][j-1] == (turn ^ bit)){
+			    		//左方向へ進んでいく
 			    		for(int a = j - 1; a >= 0; a--){
-							if(board.getBanmen()[i][a] == 0){
+			    			//石が置いてない場所を見つけた際
+							if(board.banmen[i][a] == 0){
 								break;
-							}else if(board.getBanmen()[i][a] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[i][a] == turn){
+								//裏返す処理
+								flip_W(i, j);
 							}
 						}
 			    	}
 
-			    	//左斜め上方向への検索
-			    	if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
+			    	//左斜め上方向に相手の石を見つけた際
+			    	if(board.banmen[i-1][j-1] == (turn ^ bit)){
 			    		int b = j - 1;
+			    		//左上方向へ進んでいく
 						for(int a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-							if(board.getBanmen()[a][b] == 0){
+							//石が置いてない場所を見つけた際
+							if(board.banmen[a][b] == 0){
 								break;
-							}else if(board.getBanmen()[a][b] == turn){
-								return 1;
+							//自分の石を見つけた際
+							}else if(board.banmen[a][b] == turn){
+								//裏返す処理
+								flip_NW(i, j);
 							}
 						}
 			    	}
@@ -1162,623 +1464,193 @@ public class GamePlay {
 			    }
 
 
-		return 0;
 	}
 
-	/**
-	 * 相手の石を裏返すメソッド
-	 *
-	 * @param i コンソールから入力された十の位の数字
-	 * @param j コンソールから入力された一の位の数字
-	 */
-	public void flip(int i, int j){
 
-		//配列[0][0]の時、右、下、右斜め下にしか検索しない
-		if(i == 0 && j == 0){
+	//上方向を裏返す処理
+	public void flip_N(int i, int j){
 
-			//右方向への処理
-			if(board.getBanmen()[i][j + 1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
+		//上方向に相手の石を見つけた際
+		if(board.banmen[i-1][j] == (turn ^ bit)){
+			//上方向へ進んでいく
+			for(int a = i - 1; a >= 0; a--){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][j] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][j] == turn){
+					//戻りながら自分の石に変えていく
+					for(int b = a; b <= i; b++){
+						board.banmen[b][j] = turn;
 					}
-				}
-			}
-
-			//右斜め下方向への処理
-			if(board.getBanmen()[i+1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i + 1; (a < 8) && (b < 8); a++, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//配列[0][7]の時、左、下、左斜め下にしか検索しない
-		}else if(i == 0 && j == 7){
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め下方向への処理
-			if(board.getBanmen()[i+1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i + 1; (a < 8) && (b >= 0); a++, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//配列[7][0]の時、上、右、右斜め上にしか検索しない
-		}else if(i == 7 && j == 0){
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め上方向への処理
-			if(board.getBanmen()[i-1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i - 1; (a >= 0) && (b < 8); a--, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右方向への処理
-			if(board.getBanmen()[i][j+1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//配列[7][7]の時、左、上、左斜め上にしか
-		}else if(i == 7 && j == 7){
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め上方向への処理
-			if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//配列[0][j]の時、上側を検索しない
-		}else if(i == 0){
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め下方向への処理
-			if(board.getBanmen()[i+1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i + 1; (a < 8) && (b >= 0); a++, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め下方向への処理
-			if(board.getBanmen()[i+1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i + 1; (a < 8) && (b < 8); a++, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右方向への処理
-			if(board.getBanmen()[i][j+1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//配列[i][7]の時、右側を検索しない
-		}else if(j == 7){
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め上方向への処理
-			if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め下方向への処理
-			if(board.getBanmen()[i+1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i + 1; (a < 8) && (b >= 0); a++, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-
-		//配列[i][0]の時、左側を検索しない
-		}else if(j == 0){
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め上方向への処理
-			if(board.getBanmen()[i-1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i - 1; (a >= 0) && (b < 8); a--, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右方向への処理
-			if(board.getBanmen()[i][j+1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め下方向への処理
-			if(board.getBanmen()[i+1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i + 1; (a < 8) && (b < 8); a++, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-
-		//配列[7][j]の時、下側を検索しない
-		}else if(i == 7){
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め上方向への処理
-			if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め上方向への処理
-			if(board.getBanmen()[i-1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i - 1; (a >= 0) && (b < 8); a--, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右方向への処理
-			if(board.getBanmen()[i][j+1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-		//他の座標は周りをすべて調べる
-		}else{
-
-			//上方向への処理
-			if(board.getBanmen()[i-1][j] == (turn ^ bit)){
-				for(int a = i - 1; a >= 0; a--){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b <= i; b++){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右方向への処理
-			if(board.getBanmen()[i][j+1] == (turn ^ bit)){
-				for(int a = j + 1; a < 8; a++){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b >= j ; b--){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//下方向への処理
-			if(board.getBanmen()[i+1][j] == (turn ^ bit)){
-				for(int a = i + 1; a < 8; a++){
-					if(board.getBanmen()[a][j] == 0){
-						break;
-					}else if(board.getBanmen()[a][j] == turn){
-						for(int b = a; b >= i; b--){
-							board.getBanmen()[b][j] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左方向への処理
-			if(board.getBanmen()[i][j-1] == (turn ^ bit)){
-				for(int a = j - 1; a >= 0; a--){
-					if(board.getBanmen()[i][a] == 0){
-						break;
-					}else if(board.getBanmen()[i][a] == turn){
-						for(int b = a; b <= j ; b++){
-							board.getBanmen()[i][b] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//右斜め上方向への処理
-			if(board.getBanmen()[i-1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i - 1; (a >= 0) && (b < 8); a--, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-
-				}
-			}
-
-			//右斜め下方向への処理
-			if(board.getBanmen()[i+1][j+1] == (turn ^ bit)){
-				int a; int b = j + 1;
-				for(a = i + 1; (a < 8) && (b < 8); a++, b++){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b--] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め下方向への処理
-			if(board.getBanmen()[i+1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i + 1; (a < 8) && (b >= 0); a++, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c >= i; c--){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
-				}
-			}
-
-			//左斜め上方向への処理
-			if(board.getBanmen()[i-1][j-1] == (turn ^ bit)){
-				int a; int b = j - 1;
-				for(a = i - 1; (a >= 0) && (b >= 0); a--, b--){
-					if(board.getBanmen()[a][b] == 0){
-						break;
-					}else if(board.getBanmen()[a][b] == turn){
-						for(int c = a; c <= i; c++){
-							board.getBanmen()[c][b++] = turn;
-						}
-						break;
-					}
+					break;
 				}
 			}
 		}
+
+
+	}
+	//下方向を裏返す処理
+	public void flip_S(int i, int j){
+
+
+		//下方向に相手の石を見つけた際
+		if(board.banmen[i+1][j] == (turn ^ bit)){
+			//下方向へ進んでいく
+			for(int a = i + 1; a < 8; a++){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][j] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][j] == turn){
+					//戻りながら自分の石に変えていく
+					for(int b = a; b >= i; b--){
+						board.banmen[b][j] = turn;
+					}
+					break;
+				}
+			}
+		}
+
+
+}
+
+	//右方向を裏返す処理
+	public void flip_E(int i, int j){
+
+	//右方向に相手の石を見つけた際
+		if(board.banmen[i][j+1] == (turn ^ bit)){
+			//右方向へ進んでいく
+			for(int a = j + 1; a < 8; a++){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[i][a] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[i][a] == turn){
+					//戻りながら自分の石に変えていく
+					for(int b = a; b >= j ; b--){
+					board.banmen[i][b] = turn;
+					}
+					break;
+				}
+			}
+		}
+
+	}
+	//左方向を裏返す処理
+	public void flip_W(int i, int j){
+
+		//左方向に相手の石を見つけた際
+		if(board.banmen[i][j-1] == (turn ^ bit)){
+			//左方向へ進んでいく
+			for(int a = j - 1; a >= 0; a--){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[i][a] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[i][a] == turn){
+					//戻りながら自分の石に変えていく
+					for(int b = a; b <= j ; b++){
+						board.banmen[i][b] = turn;
+					}
+					break;
+				}
+			}
+		}
+
+	}
+	//右上方向を裏返す処理
+	public void flip_NE(int i, int j){
+
+		//右斜め上方向に相手の石を見つけた際
+		if(board.banmen[i-1][j+1] == (turn ^ bit)){
+			int a; int b = j + 1;
+			//右上方向へ進んでいく
+			for(a = i - 1; (a >= 0) && (b < 8); a--, b++){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][b] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][b] == turn){
+					//戻りながら自分の石に変えていく
+					for(int c = a; c <= i; c++){
+						board.banmen[c][b--] = turn;
+					}
+					break;
+				}
+
+			}
+		}
+
+	}
+	//右下方向を裏返す処理
+	public void flip_SE(int i, int j){
+
+		//右斜め下方向に相手の石を見つけた際
+		if(board.banmen[i+1][j+1] == (turn ^ bit)){
+			int a; int b = j + 1;
+			//右下方向へ進んでいく
+			for(a = i + 1; (a < 8) && (b < 8); a++, b++){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][b] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][b] == turn){
+					//戻りながら自分の石に変えていく
+					for(int c = a; c >= i; c--){
+						board.banmen[c][b--] = turn;
+					}
+					break;
+				}
+			}
+		}
+
+	}
+	//左下方向を裏返す処理
+	public void flip_SW(int i, int j){
+
+		//左斜め下方向に相手の石を見つけた際
+		if(board.banmen[i+1][j-1] == (turn ^ bit)){
+			int a; int b = j - 1;
+			//左下方向へ進んでいく
+			for(a = i + 1; (a < 8) && (b >= 0); a++, b--){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][b] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][b] == turn){
+					//戻りながら自分の石に変えていく
+					for(int c = a; c >= i; c--){
+						board.banmen[c][b++] = turn;
+					}
+					break;
+				}
+			}
+		}
+
+	}
+	//左上方向を裏返す処理
+	public void flip_NW(int i, int j){
+
+		//左斜め上方向に相手の石を見つけた際
+		if(board.banmen[i-1][j-1] == (turn ^ bit)){
+			int a; int b = j - 1;
+			//左上方向へ進んでいく
+			for(a = i - 1; (a >= 0) && (b >= 0); a--, b--){
+				//石が置いてない場所を見つけた際
+				if(board.banmen[a][b] == 0){
+					break;
+				//自分の石を見つけた際
+				}else if(board.banmen[a][b] == turn){
+					//戻りながら自分の石に変えていく
+					for(int c = a; c <= i; c++){
+						board.banmen[c][b++] = turn;
+					}
+					break;
+				}
+			}
+		}
+
 	}
 
 
