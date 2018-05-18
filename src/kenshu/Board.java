@@ -3,13 +3,13 @@ package kenshu;
 public class Board {
 
 	//盤面の値を所持した二次元配列
-	public int[][] banmen = new int[8][8];
+	private int[][] banmen = new int[8][8];
 
 	/**
 	 * コンストラクタ
 	 * 配列を初期化する
 	 */
-	public void init(){
+	protected void init(){
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
 				//白の石を指定の座標に置く
@@ -39,7 +39,7 @@ public class Board {
 	 * セッターメソッド
 	 * @param banmen
 	 */
-	public void setBanmen(int[][]banmen){
+	public void setBanmen(int[][] banmen){
 		this.banmen = banmen;
 	}
 
